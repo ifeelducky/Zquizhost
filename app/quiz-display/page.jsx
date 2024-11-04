@@ -9,7 +9,7 @@ const HostQuizPage = () => {
     const [leaderboard, setLeaderboard] = useState([]);
     const [showResult, setShowResult] = useState(false);
     const [isQuizActive, setIsQuizActive] = useState(false);
-    const [timer, setTimer] = useState(30); // Set timer for 30 seconds
+    const [timer, setTimer] = useState(15); // Set timer for 15 seconds
     const [intervalId, setIntervalId] = useState(null);
 
     useEffect(() => {
@@ -23,23 +23,35 @@ const HostQuizPage = () => {
     }, []);
 
     useEffect(() => {
-        if (isQuizActive && timer > 0) {
+        // Start the quiz when questions are loaded
+        if (questions.length > 0) {
+            handleStartQuiz();
+        }
+    }, [questions]);
+
+    useEffect(() => {
+        if (isQuizActive) {
             const id = setInterval(() => {
-                setTimer((prev) => prev - 1);
+                setTimer((prev) => {
+                    if (prev <= 1) {
+                        clearInterval(id);
+                        handleTimeUp(); // Handle when time is up
+                        return 0;
+                    }
+                    return prev - 1;
+                });
             }, 1000);
             setIntervalId(id);
-        } else if (timer === 0) {
-            handleTimeUp(); // Handle when time is up
         }
         return () => clearInterval(intervalId); // Cleanup on unmount
-    }, [isQuizActive, timer]);
+    }, [isQuizActive]);
 
     const fetchLeaderboard = async () => {
         const { data, error } = await supabase
             .from('leaderboard')
             .select('*')
             .order('score', { ascending: false })
-            .limit(3); // Get top 3 players
+            .limit(5); // Get top 5 players
 
         if (error) {
             console.error('Error fetching leaderboard:', error);
@@ -49,16 +61,9 @@ const HostQuizPage = () => {
     };
 
     const handleTimeUp = async () => {
-        setIsQuizActive(false);
-        await fetchLeaderboard(); // Fetch leaderboard when time is up
-        setShowResult(true); // Show results
-    };
-
-    const handleNextQuestion = async () => {
         if (activeQuestion < questions.length - 1) {
-            const nextQuestionIndex = activeQuestion + 1;
-            setActiveQuestion(nextQuestionIndex);
-            setTimer(30); // Reset timer for the next question
+            setActiveQuestion((prev) => prev + 1); // Move to next question
+            setTimer(15); // Reset timer for the next question
         } else {
             setShowResult(true);
             setIsQuizActive(false); // End quiz
@@ -69,18 +74,16 @@ const HostQuizPage = () => {
     const handleStartQuiz = async () => {
         setIsQuizActive(true);
         setActiveQuestion(0);
-        setTimer(30); // Reset timer
+        setTimer(15); // Reset timer
         await supabase
             .from('quiz_state')
-            .upsert({ id: 'your_quiz_state_id', current_question: 0, is_active: true });
+            .upsert({ id: 'your_quiz_state_id', is_active: true }); // Update quiz state
     };
 
     return (
         <div className='container'>
             <h1>Host Quiz Page</h1>
-            {!isQuizActive ? (
-                <button onClick={handleStartQuiz} className='btn'>Start Quiz</button>
-            ) : (
+            {isQuizActive ? (
                 <div>
                     <h2>
                         Question: {activeQuestion + 1} <span>/{questions.length}</span>
@@ -108,7 +111,7 @@ const HostQuizPage = () => {
                                             <li key={idx}>{answer}</li>
                                         ))}
                                     </ul>
-                                    <button onClick={handleNextQuestion} className='btn'>Next Question</button>
+                                    {/* Removed Next Question button */}
                                 </>
                             ) : (
                                 <h3>Loading...</h3>
@@ -116,6 +119,8 @@ const HostQuizPage = () => {
                         </div>
                     )}
                 </div>
+            ) : (
+                <h3>Loading questions...</h3>
             )}
         </div>
     );
