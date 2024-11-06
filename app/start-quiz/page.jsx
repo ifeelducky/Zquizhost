@@ -1,36 +1,49 @@
 'use client';
-import React from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import supabase from '../supabaseClient'; // Adjust the path if needed
+import supabase from '../supabaseClient';
 
 const StartQuizPage = () => {
     const router = useRouter();
+    const [error, setError] = useState('');
 
     const handleStartQuiz = async () => {
         try {
             const { data, error } = await supabase
                 .from('quiz_state')
-                .update({ is_active: true }) // Update is_active to true
-                .eq('id', 1); // Assuming the id of the quiz state you want to update is 1
+                .update({ is_active: true })
+                .eq('id', 1);
 
             if (error) {
-                console.error('Error updating quiz state:', error);
-                // Optionally show an error message to the user
+                setError('Error starting quiz: ' + error.message);
             } else {
                 console.log('Quiz started successfully:', data);
-                router.push('/quiz-display'); // Navigate to quiz-display page
+                router.push('/quiz-display');
             }
         } catch (error) {
-            console.error('Unexpected error:', error);
+            setError('Unexpected error: ' + error.message);
         }
     };
 
     return (
         <div className='container'>
-            <h1>Start Quiz</h1>
-            <button onClick={handleStartQuiz} className='btn'>
-                Start Quiz
-            </button>
+            <div className="logo"></div>
+            <h1>Quiz Control Panel</h1>
+            <div className="quiz-container">
+                <h3>Ready to Begin?</h3>
+                <p style={{ textAlign: 'center', color: '#666', marginBottom: '2rem' }}>
+                    Click the button below to start the quiz session. 
+                    This will allow participants to join and begin answering questions.
+                </p>
+                {error && (
+                    <div className="error-message">
+                        {error}
+                    </div>
+                )}
+                <button onClick={handleStartQuiz}>
+                    Start Quiz Session
+                </button>
+            </div>
         </div>
     );
 };

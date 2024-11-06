@@ -6,24 +6,25 @@ import supabase from './supabaseClient';
 const HostLogin = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [error, setError] = useState('');
     const router = useRouter();
 
     const handleLogin = async (e) => {
         e.preventDefault();
+        setError('');
 
-        // Sign in to Supabase
-        const { user, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        });
-
-        if (error) {
-            alert(error.message);
-            return;
-        }
-
-        // Perform the operations after successful login
         try {
+            // Sign in to Supabase
+            const { user, error: signInError } = await supabase.auth.signInWithPassword({
+                email,
+                password,
+            });
+
+            if (signInError) {
+                setError(signInError.message);
+                return;
+            }
+
             // Delete all entries in the leaderboard table
             const { error: deleteError } = await supabase
                 .from('leaderboard')
@@ -51,28 +52,41 @@ const HostLogin = () => {
             // Redirect to the next page (start quiz)
             router.push('/start-quiz');
         } catch (err) {
-            alert(err.message);
+            setError(err.message);
         }
     };
 
     return (
-        <form onSubmit={handleLogin}>
-            <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-            />
-            <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                required
-            />
-            <button type="submit">Login as Host</button>
-        </form>
+        <div className="container">
+            <div className="logo"></div>
+            <h1>Quiz Host Login</h1>
+            <div className="quiz-container">
+                <form onSubmit={handleLogin}>
+                    <input
+                        type="email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        placeholder="Enter your email"
+                        className={error ? 'error' : ''}
+                        required
+                    />
+                    <input
+                        type="password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="Enter your password"
+                        className={error ? 'error' : ''}
+                        required
+                    />
+                    {error && (
+                        <div className="error-message">
+                            {error}
+                        </div>
+                    )}
+                    <button type="submit">Login as Host</button>
+                </form>
+            </div>
+        </div>
     );
 };
 
