@@ -9,7 +9,7 @@ const Page = () => {
     const [activeQuestion, setActiveQuestion] = useState(0);
     const [showResult, setShowResult] = useState(false);
     const [questions, setQuestions] = useState([]);
-    const [timeLeft, setTimeLeft] = useState(15);
+    const [timeLeft, setTimeLeft] = useState(20);
     const timerRef = useRef(null);
     const isMovingRef = useRef(false);
     const [submitError, setSubmitError] = useState(null);
@@ -56,7 +56,7 @@ const Page = () => {
         if (activeQuestion < questions.length - 1) {
             const newIndex = activeQuestion + 1;
             setActiveQuestion(newIndex);
-            setTimeLeft(15);
+            setTimeLeft(20);
     
             const { error } = await supabase
                 .from('quiz_state')
@@ -100,7 +100,7 @@ const Page = () => {
     return (
         <div className="container">
             <div className="logo"></div>
-            <h1>Quiz Host Panel</h1>
+            {/* <h1>Quiz Host Panel</h1> */}
             <div>
                 <h2>
                     Question: {activeQuestion + 1}<span>/{questions.length}</span>

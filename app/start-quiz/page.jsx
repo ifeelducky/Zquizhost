@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import supabase from '../supabaseClient';
+import Image from 'next/image';
 
 const StartQuizPage = () => {
     const router = useRouter();
@@ -28,13 +29,18 @@ const StartQuizPage = () => {
     return (
         <div className='container'>
             <div className="logo"></div>
-            <h1>Quiz Control Panel</h1>
             <div className="quiz-container">
-                <h3>Ready to Begin?</h3>
-                <p style={{ textAlign: 'center', color: '#666', marginBottom: '2rem' }}>
-                    Click the button below to start the quiz session. 
-                    This will allow participants to join and begin answering questions.
-                </p>
+                <h3>zone01quiz.vercel.app </h3>
+                <div style={{ display: 'flex', justifyContent: 'center', margin: '2rem 0' }}>
+                    <Image
+                        src="/qrcode.png"
+                        alt="QR Code to join quiz"
+                        width={400}
+                        height={400}
+                        style={{ maxWidth: '100%', height: 'auto' }}
+                    />
+                </div>
+ 
                 {error && (
                     <div className="error-message">
                         {error}
